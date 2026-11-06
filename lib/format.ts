@@ -12,3 +12,17 @@ export const site = {
   instagramHandle: '@thec.ozyflame209',
   instagramUrl: 'https://www.instagram.com/thec.ozyflame209',
 };
+
+const updatedFormat = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  timeZone: 'America/Los_Angeles',
+});
+
+/** "Nov 6, 4:12 PM" in California time, for "last saved" labels. */
+export function formatUpdated(iso?: string | null): string {
+  if (!iso) return 'Not saved yet';
+  return updatedFormat.format(new Date(iso));
+}

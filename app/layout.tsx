@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Jost } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { CartDrawer } from '@/components/CartDrawer';
-import { CartProvider } from '@/components/CartProvider';
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
-import { PreviewBanner } from '@/components/Bits';
 import './globals.css';
 
 const display = Cormorant_Garamond({
@@ -51,18 +46,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body>
-        <a href="#main" className="skip-link">
-          Skip to content
-        </a>
-        <CartProvider>
-          <PreviewBanner />
-          <Header />
-          <main id="main">{children}</main>
-          <Footer />
-          <CartDrawer />
-        </CartProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

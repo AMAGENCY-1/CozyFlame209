@@ -4,32 +4,33 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AddToBag } from '@/components/AddToBag';
 import { ProductCard } from '@/components/ProductCard';
-import { getCollection, getProduct, isPurchasable, products } from '@/lib/catalog';
+import { PLACEHOLDER_IMAGE, getCollection, isPurchasable } from '@/lib/catalog';
+import { getStoreProduct, getStoreProducts } from '@/lib/catalog-store';
 import { formatPrice } from '@/lib/format';
 
 type Params = { slug: string };
 
-export function generateStaticParams(): Params[] {
-  return products.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams(): Promise<Params[]> {
+  return (await getStoreProducts()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const p = getProduct(slug);
+  const p = await getStoreProduct(slug);
   if (!p) return {};
   return {
     title: p.name,
-    description: p.summary,
-    openGraph: { images: [{ url: p.image.src, width: 1200, height: 1500, alt: p.image.alt }] },
+    description: p.summary || p.description.slice(0, 150),
+    openGraph: p.image.src ? { images: [{ url: p.image.src, alt: p.image.alt }] } : undefined,
   };
 }
 
 export default async function ProductPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getStoreProduct(slug);
   if (!product) notFound();
   const collection = getCollection(product.collection)!;
-  const related = products.filter((p) => p.slug !== product.slug).slice(0, 3);
+  const related = (await getStoreProducts()).filter((p) => p.slug !== product.slug).slice(0, 3);
   const available = isPurchasable(product);
 
   return (
@@ -47,8 +48,10 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
           <div className="pdp-grid">
             <div className="pdp-media">
               <Image
-                src={product.image.src}
+                src={product.image.src || PLACEHOLDER_IMAGE}
                 alt={product.image.alt}
+                className={product.image.src ? undefined : 'placeholder-img'}
+                unoptimized={product.image.src.startsWith('/uploads/')}
                 width={1200}
                 height={1500}
                 sizes="(max-width: 860px) 92vw, 50vw"
@@ -58,10 +61,10 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
             <div className="pdp-info">
               <p className="eyebrow">
-                {collection.name} · {product.style}
+                {[collection.name, product.style].filter(Boolean).join(' · ')}
               </p>
               <h1>{product.name}</h1>
-              <p className="pdp-price price">{product.price !== null ? formatPrice(product.price) : 'Holiday release'}</p>
+              <p className="pdp-price price">{product.price !== null ? formatPrice(product.price) : 'Price coming soon'}</p>
               <p className="pdp-summary">{product.description}</p>
 
               {product.notes.length > 0 && (
@@ -120,7 +123,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
             <div className="section-head">
               <div>
                 <p className="eyebrow">You may also love</p>
-                <h2>More from the fall pours</h2>
+                <h2>More from the shelf</h2>
               </div>
             </div>
             <div className="product-grid">

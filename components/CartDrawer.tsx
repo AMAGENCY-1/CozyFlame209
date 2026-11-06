@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
-import { getProduct } from '@/lib/catalog';
+import { PLACEHOLDER_IMAGE } from '@/lib/catalog';
 import { formatPrice } from '@/lib/format';
 import { useCart, type Fulfillment } from './CartProvider';
 import { CloseIcon } from './icons';
@@ -54,11 +54,18 @@ export function CartDrawer() {
             <div className="drawer-body">
             <ul className="bag-lines">
               {cart.lines.map((line) => {
-                const product = getProduct(line.slug);
+                const product = cart.getProduct(line.slug);
                 if (!product || product.price === null) return null;
                 return (
                   <li key={line.slug} className="bag-line">
-                    <Image src={product.image.src} alt="" width={96} height={120} className="bag-thumb" />
+                    <Image
+                      src={product.image || PLACEHOLDER_IMAGE}
+                      alt=""
+                      width={96}
+                      height={120}
+                      className="bag-thumb"
+                      unoptimized={product.image.startsWith('/uploads/')}
+                    />
                     <div className="bag-line-body">
                       <div className="bag-line-top">
                         <Link href={`/products/${product.slug}`} onClick={cart.close} className="bag-line-name">

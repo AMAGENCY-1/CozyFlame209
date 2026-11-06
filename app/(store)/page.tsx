@@ -2,11 +2,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ProductCard } from '@/components/ProductCard';
 import { ArrowIcon, FlameIcon, InstagramIcon } from '@/components/icons';
-import { getProduct, products } from '@/lib/catalog';
+import { getStoreProducts } from '@/lib/catalog-store';
 import { formatPrice, site } from '@/lib/format';
 
-export default function HomePage() {
-  const hero = getProduct('lavender-in-bloom')!;
+const FALLBACK_HERO = {
+  src: '/images/products/lavender-in-bloom.jpg',
+  alt: 'A whipped candle with molded pumpkins in a glass tumbler.',
+};
+
+export default async function HomePage() {
+  const products = await getStoreProducts();
+  // Lead with the first live product that has a photo.
+  const hero = products.find((p) => p.status === 'live' && p.image.src) ?? null;
+  const heroImage = hero ? hero.image : FALLBACK_HERO;
 
   return (
     <>
@@ -33,20 +41,23 @@ export default function HomePage() {
           <div className="hero-media">
             <div className="arch">
               <Image
-                src={hero.image.src}
-                alt={hero.image.alt}
+                src={heroImage.src}
+                alt={heroImage.alt}
+                unoptimized={heroImage.src.startsWith('/uploads/')}
                 width={1200}
                 height={1500}
                 sizes="(max-width: 860px) 90vw, 470px"
                 priority
               />
             </div>
-            <Link href={`/products/${hero.slug}`} className="hero-caption">
-              <strong>{hero.name}</strong>
-              <span>
-                {hero.notes.join(', ')} · {hero.price !== null && formatPrice(hero.price)}
-              </span>
-            </Link>
+            {hero && (
+              <Link href={`/products/${hero.slug}`} className="hero-caption">
+                <strong>{hero.name}</strong>
+                <span>
+                  {[hero.notes.join(', '), hero.price !== null ? formatPrice(hero.price) : null].filter(Boolean).join(' · ')}
+                </span>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -65,24 +76,26 @@ export default function HomePage() {
         </ul>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <p className="eyebrow">The fall pours</p>
-              <h2>This season&apos;s candles</h2>
+      {products.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <p className="eyebrow">New on the shelf</p>
+                <h2>This season&apos;s candles</h2>
+              </div>
+              <Link href="/shop" className="text-link">
+                Shop all <ArrowIcon />
+              </Link>
             </div>
-            <Link href="/shop" className="text-link">
-              Shop all <ArrowIcon />
-            </Link>
+            <div className="product-grid">
+              {products.slice(0, 6).map((p) => (
+                <ProductCard key={p.slug} product={p} />
+              ))}
+            </div>
           </div>
-          <div className="product-grid">
-            {products.map((p) => (
-              <ProductCard key={p.slug} product={p} />
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="section" style={{ background: 'var(--paper)' }}>
         <div className="container split">

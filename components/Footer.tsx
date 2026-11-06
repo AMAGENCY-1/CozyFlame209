@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { collections } from '@/lib/catalog';
 import { site } from '@/lib/format';
 import { NewsletterForm } from './Forms';
-import { InstagramIcon } from './icons';
+import { InstagramIcon, LockIcon } from './icons';
 
 export function Footer() {
   return (
@@ -44,8 +44,10 @@ export function Footer() {
         </div>
       </div>
       <div className="container footer-base">
-        <span>© 2026 The Cozy Flame</span>
-        <span>Site by AMAGENCY</span>
+        <span>© 2026 The Cozy Flame · Site by AMAGENCY</span>
+        <Link href="/portal/login" className="footer-login">
+          <LockIcon width={14} height={14} /> Client login
+        </Link>
       </div>
     </footer>
   );

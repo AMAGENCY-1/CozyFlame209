@@ -17,3 +17,7 @@ next-env.d.ts
 # misc
 .DS_Store
 npm-debug.log*
+
+# portal local storage
+/.data/
+/public/uploads/

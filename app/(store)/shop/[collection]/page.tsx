@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CollectionTabs, PageIntro } from '@/components/Bits';
 import { ProductCard } from '@/components/ProductCard';
-import { collections, getCollection, productsIn } from '@/lib/catalog';
+import { collections, getCollection } from '@/lib/catalog';
+import { getStoreProducts } from '@/lib/catalog-store';
 
 type Params = { collection: string };
 
@@ -21,7 +22,7 @@ export default async function CollectionPage({ params }: { params: Promise<Param
   const { collection } = await params;
   const c = getCollection(collection);
   if (!c) notFound();
-  const items = productsIn(c.slug);
+  const items = (await getStoreProducts()).filter((p) => p.collection === c.slug);
 
   return (
     <>
